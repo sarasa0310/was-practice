@@ -10,10 +10,12 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CustomWapApplicationServer {
     private final int port;
-
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     private static final Logger log = LoggerFactory.getLogger(CustomWapApplicationServer.class);
 
     public CustomWapApplicationServer(int port) {
@@ -30,10 +32,12 @@ public class CustomWapApplicationServer {
             while ((clientSocket = serverSocket.accept()) != null) {
                 log.info("[CustomWapApplicationServer] client connected!");
 
+                // Step3 - Thread Pool을 적용해 안정적인 서비스가 가능하도록 한다
+                executorService.execute(new ClientRequestHandler(clientSocket));
+
                 // Step2 - 사용자 요청이 들어올 때마다 Thread를 새로 생성해서 사용자 요청을 처리
                 //하도록 한다.
-
-                new Thread(new ClientRequestHandler(clientSocket)).start();
+//                new Thread(new ClientRequestHandler(clientSocket)).start();
 
                 // Step1 - 사용자 요청을 메인 Thread가 처리하도록 한다.
 //                try(InputStream in = clientSocket.getInputStream();
